@@ -1,0 +1,6 @@
+@PolimindAPI_HostAddress = http://localhost:5088
+
+GET {{PolimindAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

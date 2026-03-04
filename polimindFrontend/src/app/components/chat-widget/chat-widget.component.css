@@ -1,0 +1,10 @@
+/* src/app/components/chat-widget/chat-widget.component.css */
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 20px; border: 2px solid white; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #e2e8f0; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}

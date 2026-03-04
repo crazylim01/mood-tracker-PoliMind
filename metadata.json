@@ -1,7 +1,0 @@
-{
-  "name": "Copy of Copy of Copy of PoliMind - Politeknik Mood Tracker",
-  "description": "A comprehensive mood tracking and mental wellness application tailored for Politeknik students in Malaysia, featuring 3D visualizations and AI-driven insights.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}

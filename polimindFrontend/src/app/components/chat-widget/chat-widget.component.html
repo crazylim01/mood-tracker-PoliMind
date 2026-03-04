@@ -1,0 +1,196 @@
+<!-- src/app/components/chat-widget/chat-widget.component.html -->
+
+<!-- Backdrop -->
+<div
+  [class]="'fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[90] transition-opacity duration-1000 ' + (isOpen && !isMinimized ? 'opacity-100' : 'opacity-0 pointer-events-none')"
+  (click)="isOpen = false">
+</div>
+
+<!-- Trigger Button (Draggable, Scroll-Following, Edge-Snapping) -->
+<div
+  #triggerBtn
+  [class]="'fixed z-[100] touch-none select-none ' +
+    (isOpen ? 'scale-0 rotate-90 opacity-0 pointer-events-none ' : 'scale-100 rotate-0 opacity-100 ') +
+    (isSnapping ? 'transition-[left,top,opacity,transform] duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ' : 'transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ')"
+  [style.left.px]="triggerPos.x"
+  [style.top.px]="triggerPos.y"
+  (mousedown)="onTriggerDragStart($event)"
+  (touchstart)="onTriggerTouchStart($event)">
+  <button (click)="onTriggerClick($event)"
+    class="relative bg-indigo-600 text-white p-4 sm:p-5 rounded-[1.5rem] shadow-[0_20px_50px_-10px_rgba(79,70,229,0.6)] hover:scale-110 active:scale-90 transition-transform group overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+    <div class="absolute inset-0 rounded-[1.5rem] border-2 border-indigo-400 animate-[ping_3s_infinite] opacity-30"></div>
+    <!-- Icon + label flip based on which edge we're snapped to -->
+    <div [class]="'flex items-center gap-2 relative z-10 ' + (snappedEdge === 'left' ? 'flex-row-reverse' : '')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="font-bold text-xs hidden sm:block">PoliBot</span>
+    </div>
+  </button>
+</div>
+
+<!-- Chat Panel (Draggable, Scroll-Following) -->
+<div
+  #chatPanel
+  [class]="'fixed z-[110] transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-bottom-right touch-none select-none ' + (isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none') + ' ' + (isMinimized ? 'w-[280px] sm:w-[320px]' : 'w-[calc(100vw-24px)] sm:w-[420px] md:w-[480px]')"
+  [style.left.px]="panelPos.x"
+  [style.top.px]="panelPos.y"
+  [style.height]="isMinimized ? '80px' : 'min(85vh, 750px)'"
+  (mousedown)="onPanelDragStart($event)"
+  (touchstart)="onPanelTouchStart($event)">
+
+  <div class="h-full w-full bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.25)] border border-indigo-50/50 flex flex-col overflow-hidden relative">
+
+    <!-- Background orbs -->
+    @if (!isMinimized) {
+      <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+        <div class="absolute top-[10%] left-[20%] w-48 h-48 bg-indigo-200/40 rounded-full blur-[60px] animate-pulse"></div>
+        <div class="absolute bottom-[20%] right-[10%] w-64 h-64 bg-violet-200/40 rounded-full blur-[80px]"></div>
+      </div>
+    }
+
+    <!-- Header (drag handle) -->
+    <div
+      class="p-4 sm:p-5 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white flex justify-between items-center relative z-10 overflow-hidden cursor-grab active:cursor-grabbing"
+      [class.rounded-[2rem]]="isMinimized"
+      [class.sm:rounded-[2.5rem]]="isMinimized">
+      <div class="flex items-center gap-3">
+        <!-- Drag indicator -->
+        <div class="flex flex-col gap-[3px] opacity-40 mr-1 hidden sm:flex">
+          <div class="w-4 h-[2px] bg-white rounded-full"></div>
+          <div class="w-4 h-[2px] bg-white rounded-full"></div>
+          <div class="w-4 h-[2px] bg-white rounded-full"></div>
+        </div>
+        <div class="relative">
+          <div class="bg-white/20 p-2 sm:p-2.5 rounded-[1rem] backdrop-blur-2xl border border-white/30 shadow-xl">
+            <svg class="animate-pulse" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+          </div>
+          <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full border-[3px] border-indigo-600 shadow-lg animate-bounce"></div>
+        </div>
+        <div>
+          <h3 class="font-black text-base sm:text-lg tracking-tight drop-shadow-md">PoliBot Assistant</h3>
+          <div class="flex items-center gap-1.5">
+            <span class="flex h-1.5 w-1.5 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+            </span>
+            <p class="text-[10px] text-indigo-100 font-black uppercase tracking-[0.15em]">Online</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 relative z-20">
+        <button (click)="$event.stopPropagation(); isMinimized = !isMinimized"
+          class="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors bg-white/5 touch-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            @if (isMinimized) {
+              <polyline points="18 15 12 9 6 15"/>
+            } @else {
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            }
+          </svg>
+        </button>
+        <button (click)="$event.stopPropagation(); isOpen = false"
+          class="p-2 sm:p-2.5 hover:bg-rose-500/30 rounded-xl transition-all hover:rotate-90 bg-white/5 touch-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    @if (!isMinimized) {
+
+      <!-- Messages -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-transparent custom-scrollbar relative touch-auto" (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+
+        <!-- Empty state -->
+        @if (userMessages.length === 0) {
+          <div class="h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
+            <div class="relative group/bot">
+              <div class="absolute inset-0 bg-indigo-500 blur-[50px] opacity-20 group-hover/bot:opacity-40 transition-opacity"></div>
+              <div class="w-24 h-24 sm:w-28 sm:h-28 bg-white shadow-[0_20px_60px_-10px_rgba(79,70,229,0.2)] text-indigo-600 rounded-[2rem] flex items-center justify-center border border-indigo-50 relative z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/></svg>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <h4 class="text-xl font-black text-slate-800 tracking-tight">
+                {{ language === 'ms' ? 'Hai, ' + userName + '!' : 'Hi, ' + userName + '!' }}
+              </h4>
+              <p class="text-sm text-indigo-600 font-bold leading-relaxed max-w-[300px] mx-auto">
+                {{ language === 'ms' ? "Saya PoliBot, rakan digital anda untuk kesihatan mental di Politeknik." : "I'm PoliBot, your digital companion for mental wellness at Politeknik." }}
+              </p>
+            </div>
+            <div class="grid gap-2.5 w-full max-w-[360px]">
+              @for (prompt of quickPrompts; track prompt.key) {
+                <button (click)="sendMessage(prompt.label)" (touchend)="sendMessage(prompt.label)"
+                  class="bg-white border border-slate-100 p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm font-bold text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/50 active:bg-indigo-100 transition-all text-left flex items-center gap-3 group touch-auto">
+                  <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all text-base flex-shrink-0">{{ prompt.icon }}</div>
+                  {{ prompt.label }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Messages list -->
+        @for (msg of userMessages; track trackById($index, msg)) {
+          <div [class]="'flex ' + (msg.role === 'user' ? 'justify-end' : 'justify-start') + ' animate-in slide-in-from-bottom-4 zoom-in-95 duration-500'">
+            <div [class]="'flex gap-2.5 max-w-[88%] ' + (msg.role === 'user' ? 'flex-row-reverse' : '')">
+              <div [class]="'w-8 h-8 sm:w-9 sm:h-9 rounded-[1rem] flex-shrink-0 flex items-center justify-center text-white shadow-lg ' + (msg.role === 'user' ? 'bg-indigo-600 shadow-indigo-200' : 'bg-slate-800 shadow-slate-200')">
+                @if (msg.role === 'user') {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+                }
+              </div>
+              <div [class]="'p-3.5 sm:p-4 rounded-[1.5rem] text-sm leading-relaxed shadow-sm ' + (msg.role === 'user' ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none' : 'bg-white text-slate-800 border border-indigo-50/50 rounded-tl-none')">
+                <p class="whitespace-pre-wrap font-medium text-sm">{{ msg.text }}</p>
+                <p [class]="'text-[9px] mt-2 opacity-40 font-black uppercase tracking-widest ' + (msg.role === 'user' ? 'text-right' : 'text-left')">
+                  {{ msg.timestamp | date:'HH:mm' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Typing indicator -->
+        @if (isTyping) {
+          <div class="flex justify-start animate-in slide-in-from-left-6 fade-in">
+            <div class="flex gap-3 items-center bg-white p-4 rounded-[1.5rem] rounded-tl-none border border-indigo-50 shadow-lg">
+              <div class="flex gap-1.5">
+                <div class="w-2 h-2 bg-indigo-500 rounded-full animate-[bounce_1s_infinite_0ms]"></div>
+                <div class="w-2 h-2 bg-indigo-500 rounded-full animate-[bounce_1s_infinite_200ms]"></div>
+                <div class="w-2 h-2 bg-indigo-500 rounded-full animate-[bounce_1s_infinite_400ms]"></div>
+              </div>
+              <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.15em] animate-pulse">Thinking...</span>
+            </div>
+          </div>
+        }
+
+        <div #messagesEnd class="h-4"></div>
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 sm:p-5 bg-white border-t border-indigo-50 relative z-20 touch-auto" (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+        <div class="relative flex items-center gap-2 sm:gap-3 bg-slate-50 p-2 rounded-[1.8rem] border-2 border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all duration-500">
+          <button type="button" (click)="clearChat()"
+            class="p-2.5 sm:p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all flex-shrink-0" title="Reset">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+          <input type="text"
+            [(ngModel)]="input"
+            (keydown)="onKeyDown($event)"
+            placeholder="Type a message..."
+            class="flex-1 bg-transparent border-none outline-none text-sm px-1 py-2.5 font-bold text-slate-700 placeholder:text-slate-400 min-w-0"
+          />
+          <button type="button"
+            (click)="sendMessage()"
+            [disabled]="!input.trim() || isTyping"
+            class="bg-indigo-600 text-white p-2.5 sm:p-3 rounded-full shadow-[0_10px_25px_-5px_rgba(79,70,229,0.4)] hover:bg-indigo-700 hover:scale-105 active:scale-90 disabled:opacity-50 disabled:shadow-none transition-all group/send flex-shrink-0">
+            <svg class="group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+    }
+  </div>
+</div>

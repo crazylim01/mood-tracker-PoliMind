@@ -1,0 +1,65 @@
+/* src/styles.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations used throughout the app */
+@layer utilities {
+  .animate-in {
+    animation-fill-mode: both;
+  }
+  .fade-in {
+    animation: fadeIn 0.5s ease;
+  }
+  .slide-in-from-bottom-8 {
+    animation: slideInFromBottom8 0.5s ease;
+  }
+  .slide-in-from-bottom-6 {
+    animation: slideInFromBottom6 0.5s ease;
+  }
+  .slide-in-from-left-8 {
+    animation: slideInFromLeft8 0.3s ease;
+  }
+  .slide-in-from-top-2 {
+    animation: slideInFromTop2 0.3s ease;
+  }
+  .zoom-in-95 {
+    animation: zoomIn95 0.3s ease;
+  }
+  .fill-mode-both {
+    animation-fill-mode: both;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInFromBottom8 {
+  from { opacity: 0; transform: translateY(2rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInFromBottom6 {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInFromLeft8 {
+  from { opacity: 0; transform: translateX(-2rem); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInFromTop2 {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes zoomIn95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-20px) rotate(5deg); }
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
